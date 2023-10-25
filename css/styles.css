@@ -14,8 +14,9 @@ body {
     padding: 20px;
 }
 
-.footer {
+.footer, .footer-bottom {
     background-color: #333;
+    color: white;
     text-align: center;
     padding: 10px;
 }
@@ -44,4 +45,9 @@ body {
 
 .car-option:hover {
     transform: scale(1.1);
+}
+
+.author-info {
+    font-size: 12px;
+    margin: 0;
 }

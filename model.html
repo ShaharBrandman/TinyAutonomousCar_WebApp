@@ -5,10 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/styles.css">
     <title>SonicSteer - Model</title>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.getElementsByClassName('header');
+            if (header.length > 0) {
+                const h1 = document.createElement('h1');
+                const modelSelected = localStorage.getItem('ModelSelected');
+                if (modelSelected) {
+                    h1.innerHTML = "Model: " + modelSelected;
+                    header[0].appendChild(h1);
+                }
+                else {
+                    window.location = 'index.html';
+                }
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="header">
-        <h1>TestModel1</h1>
+        <!-- <h1>Header title</h1> -->
     </div>
     
     <!-- Add information about the car model here -->
@@ -17,6 +34,10 @@
         <a href="index.html">Home</a>
         <a href="contact.html">Contact</a>
         <a href="about.html">About</a>
+    </div>
+
+    <div class="footer-bottom">
+        <p class="author-info">Shahar Brandman &copy; 2023</p>
     </div>
 </body>
 </html>
