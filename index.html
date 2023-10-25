@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>SonicSteer - Home</title>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-database.js"></script> 
+    <script src="js/initlizeFirebase.js"></script>
+
+    <script>
+        function addCarOption(Name, ImageURL) {
+            const div = document.createElement("div");
+            div.className = "car-option";
+
+            
+            const link = document.createElement("a");
+            
+            link.href = "model.html";
+            
+            const img = document.createElement("img");
+            
+            img.src = ImageURL;
+            img.alt = Name;
+            
+            link.appendChild(img);
+            div.appendChild(link);
+
+            const namePara = document.createElement("p");
+            
+            namePara.textContent = Name;
+            
+            div.appendChild(namePara);
+
+            carOptions[0].appendChild(div);
+        }
+
+        const carOptions = document.getElementsByClassName("car-options");
+
+        const db = firebase.database();
+        const carsRef = db.ref("Cars");
+        carsRef.on('value', (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const data = childSnapshot.val();
+                console.log(data)
+                addCarOption(data.Name, data.ImageURL);
+            });
+        });
+        
+        
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome!</h1>
+        <p>Select a Car Model</p>
+    </div>
+    
+    <div class="footer">
+        <a href="index.html">Home</a>
+        <a href="contact.html">Contact</a>
+        <a href="about.html">About</a>
+    </div>
+
+    <div class="car-options">
+        <!-- <a href="model.html" class="car-option">TestModel1</a> -->
+    </div>
+</body>
+</html>
