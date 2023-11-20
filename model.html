@@ -6,34 +6,52 @@
     <link rel="stylesheet" href="css/styles.css">
     <title>SonicSteer - Model</title>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const header = document.getElementsByClassName('header');
-            if (header.length > 0) {
-                const h1 = document.createElement('h1');
-                const modelSelected = localStorage.getItem('ModelSelected');
-                if (modelSelected) {
-                    h1.innerHTML = "Model: " + modelSelected;
-                    header[0].appendChild(h1);
-                }
-                else {
-                    window.location = 'index.html';
-                }
-            }
-        });
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-database.js"></script>
+    
+    <script src="js/initlizeFirebase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/model.js"></script>
+    <script src="js/googleAPI.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvNbFD5pmbkvwnBeKAzdS77xLcGs0tuUs&callback=initMap" async defer></script>
 </head>
 <body>
     <div class="header">
         <!-- <h1>Header title</h1> -->
+        <div class="menu">
+            <span id="auth-username"></span>
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
-    
-    <!-- Add information about the car model here -->
     
     <div class="footer">
         <a href="index.html">Home</a>
         <a href="contact.html">Contact</a>
         <a href="about.html">About</a>
+    </div>
+
+    <div id = "CameraAndMapContainer">
+        <div id = "camera">
+            <img src = "127.0.0.1/stream"/>
+        </div>
+        <div id = "map"></div>
+    </div>
+
+    <div class="grid-container">
+        <div class="grid-item" id="geolocation">Geolocation: <span id="coordinates">( 0.0 , 0.0 )</span></div>
+        <div class="grid-item">
+            Target Selector
+            <select class="target-selector" id="targets"></select>
+        </div>
+        <div class="grid-item" id="targetDisplay">Target: <span id="target">None</span></div>
+        <div class="grid-item" id="followLaser">
+            <div class="follow-laser-btn" onclick="toggleFollowLaser()">
+                Follow Laser
+                <div class="circle" id="circle"></div>
+            </div>
+        </div>
     </div>
 
     <div class="footer-bottom">

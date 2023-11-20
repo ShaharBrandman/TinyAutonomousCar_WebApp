@@ -11,4 +11,4 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-console.log("Firebase is initlized and connected to the Cloud!");
+console.log("Firebase is initlized and connected!");
