@@ -1,0 +1,41 @@
+.about-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.about-content,
+.open-source-projects {
+    width: 45%;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+}
+
+.about-content h2,
+.open-source-projects h2 {
+    color: #24292e;
+    border-bottom: 2px solid #24292e;
+    padding-bottom: 10px;
+}
+
+.open-source-projects ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.open-source-projects li {
+    margin-bottom: 10px;
+}
+
+.open-source-projects a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.open-source-projects a:hover {
+    text-decoration: underline;
+}

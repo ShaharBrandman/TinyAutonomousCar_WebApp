@@ -1,33 +1,4 @@
-const carsRef = firebase.database().ref('Cars');
-
 let modelSelected = null;
-
-function getModelByName(snapshot, name) {
-    for(key in snapshot) {
-        if (snapshot[key].Name === name) {
-            //cheap trick to append the key to the model data
-            return { ...snapshot[key], key: key };
-        }   
-    }
-
-    return undefined;
-}
-
-//updaet the model selected and change the header at once
-function changeHeader() {
-    const header = document.getElementsByClassName('header');
-    if (header.length > 0) {
-        const h1 = document.createElement('h1');
-        
-        if (modelSelected) {
-            h1.innerHTML = "Model: " + modelSelected;
-            header[0].appendChild(h1);
-        }
-        else {
-            window.location = 'index.html';
-        }
-    }
-}   
 
 function displayGeolocation(locationData) {
     if (locationData) {
@@ -112,9 +83,18 @@ function toggleFollowLaser() {
     })
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function redirectToUploadPage() {
+    window.location = 'upload.html';
+}
+
+function redirectToReviewPage() {
+    window.location = 'review.html';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     modelSelected = localStorage.getItem('ModelSelected');
 
+    displayAuthUsername();
     changeHeader();
 
     carsRef.on('value', (s) => {

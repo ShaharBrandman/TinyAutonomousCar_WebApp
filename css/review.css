@@ -1,0 +1,47 @@
+#imageContainer {
+    margin-bottom: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.imageItem {
+    position: relative;
+    margin: 10px;
+    flex: 0 0 calc(20% - 20px);
+}
+
+.imageItem img {
+    width: 100%;
+    height: auto;
+}
+
+.imageButtons {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+}
+
+.approveButton,
+.deleteButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.approveButton:hover {
+    background-color: green;
+}
+
+.deleteButton:hover {
+    background-color: red;
+}

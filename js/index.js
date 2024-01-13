@@ -50,12 +50,36 @@ function displayCarModels() {
     });
 }
 
+function displayAuthScreen() {
+    const authScreen = document.createElement('div');
+    
+    authScreen.innerHTML = `
+        <div class="auth-form">
+            <form id="login-form">
+                <input type="email" id="email" placeholder="Email" required>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Password" required>
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">&#x1F441;</span>
+                </div>
+                <button type="submit">Sign In</button>
+            </form>
+        </div>`;
+
+    carOptions[0].appendChild(authScreen);
+
+    configOnSubmitListener();
+}
+
 //defined every time the page loads, if a user is not signed in, make them authenciate, else display index.html
 document.addEventListener('DOMContentLoaded', () => {
+    //if user is not logged in, display the sign in/up screen
     if (localStorage.getItem('authUsername') == null) {
-        window.location = 'auth.html';
+        document.getElementById('auth-username-button').hidden = true;
+        displayAuthScreen();
     }
+    //else display the car models
     else {
+        document.getElementById('auth-username-button').hidden = false;
         displayAuthUsername();
         displayCarModels();
     }

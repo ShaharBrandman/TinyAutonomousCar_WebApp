@@ -3,27 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/general.css">
+    <link rel="stylesheet" href="css/about.css">
     <title>SonicSteer - About</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-database.js"></script>
-    <script src="js/initlizeFirebase.js"></script>
-    <script src = 'js/auth.js'></script>
+    <script src=  "https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+    <script src = "js/firebase/initlizeFirebase.js"></script>
+
+    <script src = "https://www.gstatic.com/firebasejs/8.2.10/firebase-database.js"></script>
+    <script src = "js/firebase/initlizeRealtime.js"></script>
+
+    <script src = "https://www.gstatic.com/firebasejs/8.2.10/firebase-auth.js"></script>
+    <script src = "js/firebase/intilizeAuth.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            displayAuthUsername();
+        })
+    </script>
 </head>
 <body>
     <div class="header">
         <h1>About Us</h1>
         <div class="menu">
             <span id="auth-username"></span>
-            <button onclick="logout()">Logout</button>
+            <button id = "auth-username-button" onclick="logout()">Logout</button>
         </div>
     </div>
     
     <div class="footer">
         <a href="index.html">Home</a>
-        <a href="contact.html">Contact</a>
         <a href="about.html">About</a>
     </div>
 
@@ -40,12 +49,16 @@
         <div class="open-source-projects">
             <h2>Open Source Projects</h2>
             <ul>
-                <li><a href="https://www.arduino.cc/" target="_blank">Arduino</a></li>
+                <li><a href="https://arduino.cc/" target="_blank">Arduino</a></li>
                 <li><a href="https://firebase.google.com/" target="_blank">Firebase</a></li>
                 <li><a href="https://firebase.google.com/docs/database" target = "_blank">Firebase Realtime db</a></li>
                 <li><a href="https://firebase.google.com/docs/auth" target="_blank">Firebase Authentication</a></li>
+                <li><a href="https://firebase.google.com/docs/storage" target="_blank">Firebase Storage</a></li>
                 <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
                 <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/HTML5" target="_blank">HTML5</a></li>
+                <li><a href="https://nodejs.org/" target="_blank">Node.js</a></li>
+                <li><a href="https://opencv.org/" target="_blank">OpenCV</a></li>
+                <li><a href="https://tensorflow.org/" target="_blank">Tensorflow</a></li>
                 <!-- Add more open source projects as needed -->
             </ul>
         </div>
@@ -53,6 +66,51 @@
 
     <div class="footer-bottom">
         <p class="author-info">Shahar Brandman &copy; 2023</p>
+        <div class="contact-info">
+            <div class="contact-method">
+                <img 
+                    src="https://cdn-icons-png.flaticon.com/512/25/25231.png"
+                    alt="GitHub Icon"
+                >
+                <a href="https://github.com/ShaharBrandman" target="_blank">GitHub</a>
+            </div>
+
+            <div class="contact-method">
+                <img
+                    src="https://cdn1.iconfinder.com/data/icons/logotypes/32/circle-linkedin-512.png"
+                    alt="LinkedIn Icon"
+                >
+                <a href="https://www.linkedin.com/in/shahar-brandman" target="_blank">LinkedIn</a>
+            </div>
+
+            <div class="contact-method">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png"
+                    alt="Instagram Icon"
+                >
+                <a href="https://www.instagram.com/shahar_brandman" target="_blank">Instagram</a>
+            </div>
+
+            <div class="contact-method">
+                <img 
+                    src="https://static-00.iconduck.com/assets.00/whatsapp-icon-2040x2048-8b5th74o.png"
+                    alt="WhatsApp Icon"
+                >
+                <a href="https://wa.me/qr/A2R3STRP5W3AO1" target="_blank">
+                    <span>Whatsapp</span>
+                </a>
+            </div>
+
+            <div class="contact-method">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/2048px-Telegram_logo.svg.png"
+                    alt="Telegram Icon"
+                >
+                <a href="https://t.me/ShaharBrandman" target="_blank">
+                    Telegram
+                </a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

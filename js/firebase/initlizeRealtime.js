@@ -1,0 +1,1 @@
+const carsRef = firebase.database().ref('Cars');
