@@ -45,13 +45,73 @@ function fetchAndDisplayImages() {
     testOutputRef.listAll().then((result) => {
         const images = [];
         result.items.forEach((item) => {
-            item.getDownloadURL().then((url) => {
-                images.push({ name: item.name, url: url });
-                displayImages(images);
-            });
+            if (item.name.endsWith('.jpeg')) {
+                item.getDownloadURL().then((url) => {
+                    images.push({ name: item.name, url: url });
+                    displayImages(images);
+                });
+            }
         });
     }).catch((error) => {
         console.error('Error fetching images:', error);
+    });
+}
+
+function copyImage(sourceRefImage, destinationRefImage) {
+    //get download url of approved image
+    sourceRefImage.getDownloadURL().then((url) => {
+        fetch(url)
+            .then((response) => response.blob())
+            .then((blob) => {
+                const metadata = { contentType: 'image/jpeg' };
+                
+                //upload image to destination folder
+                destinationRefImage.put(blob, metadata).then(() => {
+                    //deleting the approved image
+                    sourceRef.delete().then(() => {
+                        console.log(`${id} Approved and Moved`);
+                        fetchAndDisplayImages();
+                    }).catch((error) => {
+                        console.error(`Error deleting ${id} in ${url}:`, error);
+                    });
+                }).catch((error) => {
+                    console.error(`Error moving ${id} in ${url}:`, error);
+                });
+            })
+            .catch((error) => {
+                console.error('Error fetching image as blob:', error);
+            });
+    }).catch((error) => {
+        console.error('Error fetching image URL:', error);
+    });
+}
+
+function copyMetadata(sourceRefMetadata, destinationRefMetadata) {
+    //get download url of approved image metadata
+    sourceRefMetadata.getDownloadURL().then((url) => {
+        fetch(url)
+            .then((response) => response.blob())
+            .then((blob) => {
+                const metadata = { contentType: 'text/json' };
+                
+                //upload image to destination folder
+                destinationRefMetadata.put(blob, metadata).then(() => {
+                    //deleting the approved image
+                    sourceRef.delete().then(() => {
+                        console.log(`${id} Approved and Moved`);
+                        fetchAndDisplayImages();
+                    }).catch((error) => {
+                        console.error(`Error deleting ${id} in ${url}:`, error);
+                    });
+                }).catch((error) => {
+                    console.error(`Error moving ${id} in ${url}:`, error);
+                });
+            })
+            .catch((error) => {
+                console.error('Error fetching image as blob:', error);
+            });
+    }).catch((error) => {
+        console.error('Error fetching image URL:', error);
     });
 }
 
@@ -59,35 +119,13 @@ function approveImage(id) {
     const dest = prompt(`Enter a classification label for ${id}`);
 
     if (dest) {
-        const sourceRef = testOutputRef.child(id);
-        const destinationRef = trainingDataRef.child(dest + "/" + id);
+        const sourceRefImage = testOutputRef.child(id);
+        const sourceRefMetadata = testOutputRef.child(`Metadata-${id}`);
+        const destinationRefImage = trainingDataRef.child(`Images/${id}`);
+        const destinationRefMetadata = trainingDataRef.child(`Metadata/Metadata-${id}`);
 
-        //get download url of approved image
-        sourceRef.getDownloadURL().then((url) => {
-            fetch(url)
-                .then((response) => response.blob())
-                .then((blob) => {
-                    const metadata = { contentType: 'image/jpeg' };
-                    
-                    //upload image to destination folder
-                    destinationRef.put(blob, metadata).then(() => {
-                        //deleting the approved image
-                        sourceRef.delete().then(() => {
-                            console.log(`${id} Approved and Moved`);
-                            fetchAndDisplayImages();
-                        }).catch((error) => {
-                            console.error(`Error deleting ${id} in ${url}:`, error);
-                        });
-                    }).catch((error) => {
-                        console.error(`Error moving ${id} in ${url}:`, error);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error fetching image as blob:', error);
-                });
-        }).catch((error) => {
-            console.error('Error fetching image URL:', error);
-        });
+        copyImage(sourceRefImage, destinationRefImage);
+        copyMetadata(sourceRefMetadata, destinationRefMetadata);
     }
 }
 

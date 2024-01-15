@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src=  "https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+        <script src = "js/firebase/initlizeFirebase.js"></script>
+
+        <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-storage.js"></script>
+        <script src = "js/firebase/initlizeStorage.js"></script>
+    </head>
+<body>
+    <h1>HTML5 Canvas</h1>
+    <h2>The rect() Method</h2>
+
+    <canvas id="myCanvas" width="800" height="600" style="border:1px solid grey;"></canvas>
+
+    <input
+        id = 'uploadButton'
+        type = 'file';
+        multiple = false;
+        accept = 'image/jpeg'
+        hidden
+    />
+    <label
+        for="uploadButton"
+    >
+        Click to upload file
+    </label>
+
+    <button
+        id = 'approveButton'
+    >   
+        Approve images
+    </button>
+        
+
+    <div id = "samplesDisplay"></div>
+
+    <script>
+        const c = document.getElementById("myCanvas");
+
+        const ctx = c.getContext("2d");
+
+        const bg = new Image();
+        bg.crossOrigin = 'anonymous'; //some how this is possible with imutable type??!
+
+        bg.onload = () => {
+            ctx.drawImage(bg, 0, 0, 800, 600);
+        };
+
+        ctx.lineWidth = 3;
+
+        ctx.font = '20px Verdana';
+
+        let px, py, x, y, w, h;
+        let isDrawing = false;
+
+        let faces = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('uploadButton').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        bg.src = e.target.result;
+                        bg.alt = file.name;
+                        bg.crossOrigin = 'anonymous';
+                        bg.file = file;
+                    };
+                    reader.readAsDataURL(file);
+                }
+                else {
+                    console.error("file doesn't exists!");
+                }
+            });
+            
+            document.getElementById('approveButton').addEventListener('click', (event) => {
+                if (bg.src) {
+                    uploadFacesWithMetadata();
+                    reset();
+                }
+            });
+        });
+
+        function uploadFacesWithMetadata() {
+            trainingDataRef.child(`Images/${bg.alt}`).put(bg.file, {
+                contentType: 'image/jpeg'
+            });
+
+            faces.forEach((face) => {
+                console.log(`uploading: ${face}`);
+                trainingDataRef.child(`Metadata/${face.fullname}`).put(
+                    new Blob([JSON.stringify(face)]),{
+                        contentType: 'application/json'
+                    }
+                );
+            })
+        }
+
+        function reset() {
+            document.getElementById('samplesDisplay').innerHTML = '';
+            isDrawing = false;
+            px, py, x, y, w, h = 0;
+            faces = [];
+            ctx.clearRect(0, 0, c.width, c.height);  
+            ctx.drawImage(bg, 0, 0, 800, 600);
+        }
+
+        function displayImagesSamples() {
+            const sd = document.getElementById('samplesDisplay');
+            sd.innerHTML = '';
+
+            faces.forEach((e) => {
+                const divTmp = document.createElement('div');
+                
+                const imageTmp = new Image();
+
+                imageTmp.src = e.data;
+                imageTmp.crossOrigin = 'anonymous';
+
+                const p = document.createElement('p');
+                p.innerText = `x: ${e.x}, y: ${e.y}, w: ${e.w}, h: ${e.h}, label: ${e.label}`;
+
+                divTmp.appendChild(imageTmp);
+                divTmp.appendChild(p);
+
+                sd.appendChild(divTmp);
+            })
+        }
+
+        function drawMultipleFaces(faces) {
+            ctx.beginPath();
+
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(bg, 0, 0, 800, 600);
+
+            faces.forEach((e) => {
+                ctx.rect(e.x, e.y, e.w, e.h);
+                ctx.fillText(e.label, e.px, e.py);
+                ctx.stroke();
+            })
+
+            // if (faces.length >= 3) {
+            //     console.log(c.toDataURL('image/jpeg'));
+            // }
+
+            displayImagesSamples();
+        }
+
+        function drawFace(x, y, w, h) {
+            ctx.beginPath();
+            ctx.clearRect(0, 0, c.width, c.height);
+            ctx.drawImage(bg, 0, 0, 800, 600);
+            ctx.rect(x, y, w, h);
+            ctx.stroke();
+        }
+
+        function initRec(e) {
+            px = e.pageX - c.offsetLeft;
+            py = e.pageY - c.offsetTop;
+        }
+
+        function endRec(e) {
+            x = e.pageX - c.offsetLeft;
+            y = e.pageY - c.offsetTop;
+
+            w = px - x;
+            h = py - y;
+
+            drawFace(x, y, w, h);
+        }
+
+        function finishRec() {
+            if (isDrawing) {
+                const label = prompt("Enter a label for the rectangle");
+
+                if(label) {
+                    faces.push({
+                    'label': label,
+                    'x': x,
+                    'y': y,
+                    'w': w,
+                    'h': h,
+                    'px': px,
+                    'py': py,
+                    'data': c.toDataURL('image/jpeg'),
+                    'alt': bg.alt,
+                    'fullname': `${label}-for-filename-${bg.alt}.json`
+                    });
+
+                    console.log(`new face: ${faces[faces.length - 1]}`);
+
+                    drawMultipleFaces(faces);
+                }
+            }
+        }
+
+        c.addEventListener('mousedown', (e) => {
+            if (!bg.src) {
+                return;
+            }
+
+            if (faces.length < 3) {
+                initRec(e);
+                isDrawing = true;
+            }
+        })
+
+        c.addEventListener('mousemove', (e) => {
+            if (!bg.src) {
+                return;
+            }
+
+            if (isDrawing) {
+                endRec(e);
+            }
+        })
+
+        c.addEventListener('mouseup', (e) => {
+            if (!bg.src) {
+                return;
+            }
+
+            if (faces.length >= 3) {
+                console.log('Cannot upload more then 3 faces');
+            }
+            else {
+                endRec(e);
+                finishRec();
+                isDrawing = false;
+            }
+        })
+
+        c.addEventListener('mouseleave', () => {
+            if (!bg.src) {
+                return;
+            }
+
+            if (isDrawing) {
+                drawFace(x, y, w, h);
+            
+                finishRec();
+                isDrawing = false;
+            }
+        });
+
+    </script> 
+
+</body>
+</html>
