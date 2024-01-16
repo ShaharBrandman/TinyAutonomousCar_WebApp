@@ -42,13 +42,30 @@
 
         <div id = 'uploadContainer'>
             <div id ='samplesContainer'>
-                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F11.jpeg?alt=media&token=1d181680-909a-44e0-bcb4-b612f45eb3fd'/>
-                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F3.jpeg?alt=media&token=7c93c7ae-38f4-4f3a-be33-0c24a577584a'/>
-                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F13.jpeg?alt=media&token=b9a37ad7-0446-420c-a05f-f59d639d9a88'/>
+                <!-- <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F11.jpeg?alt=media&token=1d181680-909a-44e0-bcb4-b612f45eb3fd'/> -->
+                
             </div>
-            <canvas id='canvasContainer' width='800' height='600'></canvas>
+            <div id='canvasContainer'>
+                <h1 id = 'selectedImageTxt'>Selected Image: None</h1>
+                <canvas  id = 'canvasItself' width='800' height='600'></canvas>
+                <input
+                    id = 'inputButton'
+                    type = 'file';
+                    multiple = false;
+                    accept = 'image/jpeg'
+                    hidden
+                />
+                <label
+                    id = 'inputButtonLabel'
+                    for="inputButton"
+                >
+                    Click to upload file
+                </label>
+            </div>
             <div id = 'canvasButtonsContainer'>
-                canvasButtonContainer
+                <button id = 'resetCanvasButton'>Reset Canvas</button>
+                <button id = 'uploadSamplesButton'>Upload Samples</button>
+                <button id = 'removeDrawingButton'>Remove Drawing</button>
             </div>
         </div>
 

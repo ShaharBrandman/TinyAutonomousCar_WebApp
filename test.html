@@ -40,16 +40,16 @@
 
         const ctx = c.getContext("2d");
 
+        ctx.lineWidth = 3;
+
+        ctx.font = '20px Verdana';
+
         const bg = new Image();
         bg.crossOrigin = 'anonymous'; //some how this is possible with imutable type??!
 
         bg.onload = () => {
             ctx.drawImage(bg, 0, 0, 800, 600);
         };
-
-        ctx.lineWidth = 3;
-
-        ctx.font = '20px Verdana';
 
         let px, py, x, y, w, h;
         let isDrawing = false;
