@@ -3,7 +3,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel = "stylesheet" href="css/upload.css">
         <title>SonicSteer - Model - Upload </title>
 
         <script src=  "https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
@@ -39,7 +40,17 @@
             <a href="about.html">About</a>
         </div>
 
-        <div id="imageContainer" class = "collapsed"></div>
+        <div id = 'uploadContainer'>
+            <div id ='samplesContainer'>
+                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F11.jpeg?alt=media&token=1d181680-909a-44e0-bcb4-b612f45eb3fd'/>
+                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F3.jpeg?alt=media&token=7c93c7ae-38f4-4f3a-be33-0c24a577584a'/>
+                <img src = 'https://firebasestorage.googleapis.com/v0/b/sonicsteersystems.appspot.com/o/trainingData%2FImages%2F13.jpeg?alt=media&token=b9a37ad7-0446-420c-a05f-f59d639d9a88'/>
+            </div>
+            <canvas id='canvasContainer' width='800' height='600'></canvas>
+            <div id = 'canvasButtonsContainer'>
+                canvasButtonContainer
+            </div>
+        </div>
 
         <div class="footer-bottom">
             <p class="author-info">Shahar Brandman &copy; 2023</p>

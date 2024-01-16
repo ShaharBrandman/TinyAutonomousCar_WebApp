@@ -77,20 +77,20 @@
             
             document.getElementById('approveButton').addEventListener('click', (event) => {
                 if (bg.src) {
-                    uploadFacesWithMetadata();
+                    uploadFaces();
                     reset();
                 }
             });
         });
 
-        function uploadFacesWithMetadata() {
+        function uploadFaces() {
             trainingDataRef.child(`Images/${bg.alt}`).put(bg.file, {
                 contentType: 'image/jpeg'
             });
 
             faces.forEach((face) => {
-                console.log(`uploading: ${face}`);
-                trainingDataRef.child(`Metadata/${face.fullname}`).put(
+                //console.log(`uploading: ${face}`);
+                trainingDataRef.child(`Metadata/${face.path}`).put(
                     new Blob([JSON.stringify(face)]),{
                         contentType: 'application/json'
                     }
@@ -184,12 +184,12 @@
                     'h': h,
                     'px': px,
                     'py': py,
-                    'data': c.toDataURL('image/jpeg'),
-                    'alt': bg.alt,
-                    'fullname': `${label}-for-filename-${bg.alt}.json`
+                    'data': c.toDataURL('image/jpeg'), //image in bash64 format
+                    'alt': bg.alt, //file name basically
+                    'path': `${bg.alt}/${label}.json` //full path in firebase Metadata/ as root
                     });
 
-                    console.log(`new face: ${faces[faces.length - 1]}`);
+                    //console.log(`new face: ${faces[faces.length - 1]}`);
 
                     drawMultipleFaces(faces);
                 }

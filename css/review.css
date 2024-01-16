@@ -1,5 +1,5 @@
 #imageContainer {
-    margin-bottom: 100px;
+    margin-bottom: 50%;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
