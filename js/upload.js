@@ -3,7 +3,7 @@ const resWidth = 600;
 
 let canvas, ctx;
 
-const canvasImage = new Image();
+let canvasImage = new Image();
 canvasImage.crossOrigin = 'anonymous'; //somehow this is possible with an imutable variable
 
 canvasImage.onload = () => {
@@ -42,11 +42,13 @@ function resetCanvas(removeBackgroundImage = false) {
     px, py, x, y, w, h = 0;
     selectedRect = [];
     ctx.clearRect(0, 0, canvas.width, canvas.height);  
+
     if (removeBackgroundImage == false) {
         ctx.drawImage(canvasImage, 0, 0, 800, 600);
     }
-    else {
-        canvasImage.src = undefined;
+    else {  
+        canvasImage = new Image();
+        document.getElementById('selectedImageTxt').innerText = 'Selected Image: None';
     }
 }
 
@@ -56,7 +58,6 @@ function uploadImageAndSelectedRect() {
     });
 
     selectedRect.forEach((face) => {
-        //console.log(`uploading: ${face}`);
         trainingDataRef.child(`Metadata/${face.path}`).put(
             new Blob([JSON.stringify(face)]),{
                 contentType: 'application/json'
@@ -159,7 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
             
                 console.log(`${file.name} has been upload to the canvas`)
             }
-                else {
+            else {
                 console.error(`File doesn't exists for some reason`);
             }
         });
