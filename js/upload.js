@@ -52,13 +52,33 @@ function resetCanvas(removeBackgroundImage = false) {
     }
 }
 
+function createCOCOXml(fileName, selectedRect) {
+    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+    const rootOpenTag = `<annotation><filename>${fileName}</filename><size><width>${resWidth}</width><height>${resHeight}</height></size>`;
+    const rootCloseTag = '</annotation>';
+
+    const objectTags = selectedRect.map((face) => {
+        return `<object><name>${face.label}</name><bndbox><xmin>${face.x}</xmin><ymin>${face.y}</ymin><xmax>${face.x + face.w}</xmax><ymax>${face.y + face.h}</ymax></bndbox></object>`;
+    });
+
+    const cocoXml = `${xmlHeader}${rootOpenTag}${objectTags.join('')}${rootCloseTag}`;
+
+    return cocoXml;
+}
+
 function uploadImageAndSelectedRect() {
     trainingDataRef.child(`Images/${canvasImage.alt}`).put(canvasImage.file, {
         contentType: 'image/jpeg'
     });
 
+    cocoXML = createCOCOXml(canvasImage.alt, selectedRect);
+
+    trainingDataRef.child(`Annotations/${canvasImage.alt}.xml`).put(new Blob([cocoXML]), {
+        contentType: 'application/xml'
+    });
+
     selectedRect.forEach((face) => {
-        trainingDataRef.child(`Metadata/${face.path}`).put(
+        trainingDataRef.child(`Metadata/${face.alt}.json`).put(
             new Blob([JSON.stringify(face)]),{
                 contentType: 'application/json'
             }
@@ -122,8 +142,7 @@ function saveRectToList() {
             'px': px,
             'py': py,
             'data': canvas.toDataURL('image/jpeg'), //image in bash64 format
-            'alt': canvasImage.alt, //file name basically
-            'path': `${canvasImage.alt}/${label}.json` //full path in firebase Metadata/ as root
+            'alt': canvasImage.alt.split('.jpeg'), //file name basically
             });
 
             //console.log(`new face: ${selectedRect[selectedRect.length - 1]}`);
