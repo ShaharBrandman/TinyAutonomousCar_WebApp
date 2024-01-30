@@ -6,7 +6,7 @@ let canvas, ctx;
 let canvasImage = new Image();
 canvasImage.crossOrigin = 'anonymous'; //somehow this is possible with an imutable variable
 
-canvasImage.onload = () => {
+function updateCanvas() {
     const inputButtonLabel = document.getElementById('selectedImageTxt');
     if (inputButtonLabel) {
         inputButtonLabel.innerText = `Selected Image: ${canvasImage.alt}`
@@ -14,6 +14,8 @@ canvasImage.onload = () => {
 
     ctx.drawImage(canvasImage, 0, 0, 800, 600);
 }
+
+canvasImage.onload = updateCanvas;
 
 let x, y, px, py, w, h;
 let isDrawing = false;
@@ -48,6 +50,8 @@ function resetCanvas(removeBackgroundImage = false) {
     }
     else {  
         canvasImage = new Image();
+        canvasImage.crossOrigin = 'anonymous';
+        canvasImage.onload = updateCanvas;
         document.getElementById('selectedImageTxt').innerText = 'Selected Image: None';
     }
 }
@@ -57,8 +61,17 @@ function createCOCOXml(fileName, selectedRect) {
     const rootOpenTag = `<annotation><filename>${fileName}</filename><size><width>${resWidth}</width><height>${resHeight}</height></size>`;
     const rootCloseTag = '</annotation>';
 
-    const objectTags = selectedRect.map((face) => {
-        return `<object><name>${face.label}</name><bndbox><xmin>${face.x}</xmin><ymin>${face.y}</ymin><xmax>${face.x + face.w}</xmax><ymax>${face.y + face.h}</ymax></bndbox></object>`;
+    const objectTags = selectedRect.map((obj) => {
+        //return `<object><name>${obj.label}</name><bndbox><xmin>${obj.x}</xmin><ymin>${obj.y}</ymin><xmax>${obj.x + obj.w}</xmax><ymax>${obj.y + obj.h}</ymax></bndbox></object>`;
+        const xmlStr = `<object><name>${obj.label}</name><bndbox>`;
+        
+        const xMin = `<xmin>${Math.min(obj.x, obj.px)}</xmin>`
+        const xMax = `<xmax>${Math.max(obj.x, obj.px)}</xmax>`
+        
+        const yMin = `<ymin>${Math.min(obj.y, obj.py)}</ymin>`
+        const yMax = `<ymax>${Math.max(obj.y, obj.py)}</ymax>`
+
+        return `${xmlStr}${xMin}${yMin}${xMax}${yMax}</bndbox></object>`;
     });
 
     const cocoXml = `${xmlHeader}${rootOpenTag}${objectTags.join('')}${rootCloseTag}`;
@@ -77,13 +90,13 @@ function uploadImageAndSelectedRect() {
         contentType: 'application/xml'
     });
 
-    selectedRect.forEach((face) => {
-        trainingDataRef.child(`Metadata/${face.alt}.json`).put(
-            new Blob([JSON.stringify(face)]),{
-                contentType: 'application/json'
-            }
-        );
-    })
+    // selectedRect.forEach((face) => {
+    //     trainingDataRef.child(`Metadata/${face.alt}.json`).put(
+    //         new Blob([JSON.stringify(face)]),{
+    //             contentType: 'application/json'
+    //         }
+    //     );
+    // })
 }
 
 function drawMultipleRect(selectedRect) {
@@ -134,15 +147,15 @@ function saveRectToList() {
 
         if(label) {
             selectedRect.push({
-            'label': label,
-            'x': x,
-            'y': y,
-            'w': w,
-            'h': h,
-            'px': px,
-            'py': py,
-            'data': canvas.toDataURL('image/jpeg'), //image in bash64 format
-            'alt': canvasImage.alt.split('.jpeg'), //file name basically
+                'label': label,
+                'x': x,
+                'y': y,
+                'w': w,
+                'h': h,
+                'px': px,
+                'py': py,
+                'data': canvas.toDataURL('image/jpeg'), //image in bash64 format
+                'alt': canvasImage.alt.split('.jpeg')[0], //file name basically
             });
 
             //console.log(`new face: ${selectedRect[selectedRect.length - 1]}`);
@@ -176,7 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 };
 
                 reader.readAsDataURL(file);
-            
+
                 console.log(`${file.name} has been upload to the canvas`)
             }
             else {
