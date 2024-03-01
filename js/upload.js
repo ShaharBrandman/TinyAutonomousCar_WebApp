@@ -1,5 +1,5 @@
-const resHeight = 800;
-const resWidth = 600;
+const resHeight = 600;
+const resWidth = 800;
 
 let canvas, ctx;
 
@@ -12,7 +12,7 @@ function updateCanvas() {
         inputButtonLabel.innerText = `Selected Image: ${canvasImage.alt}`
     }
 
-    ctx.drawImage(canvasImage, 0, 0, 800, 600);
+    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
 }
 
 canvasImage.onload = updateCanvas;
@@ -46,7 +46,7 @@ function resetCanvas(removeBackgroundImage = false) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);  
 
     if (removeBackgroundImage == false) {
-        ctx.drawImage(canvasImage, 0, 0, 800, 600);
+        ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
     }
     else {  
         canvasImage = new Image();
@@ -103,7 +103,7 @@ function drawMultipleRect(selectedRect) {
     ctx.beginPath();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(canvasImage, 0, 0, 800, 600);
+    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
 
     selectedRect.forEach((e) => {
         ctx.rect(e.x, e.y, e.w, e.h);
@@ -121,7 +121,7 @@ function drawMultipleRect(selectedRect) {
 function drawRect(x, y, w, h) {
     ctx.beginPath();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(canvasImage, 0, 0, 800, 600);
+    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
     ctx.rect(x, y, w, h);
     ctx.stroke();
 }
