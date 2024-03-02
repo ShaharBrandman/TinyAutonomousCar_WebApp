@@ -4,7 +4,10 @@ function displayGeolocation(locationData) {
     if (locationData) {
         const cords = document.getElementById('coordinates');
         if (cords) {
-            cords.innerText = `( ${locationData.lat} , ${locationData.lng} )`
+            if (cords.innerText != `( ${locationData.lat} , ${locationData.lng} )`) {
+                cords.innerText = `( ${locationData.lat} , ${locationData.lng} )`;
+            }
+            
         }
     }
     else {
@@ -15,11 +18,12 @@ function displayGeolocation(locationData) {
 function displayTargetSelector(targets) {
     if (targets) {
         const selector = document.getElementById('targets');
+        selector.innerHTML = '';
 
         if (selector) {
             targets.forEach((target) => {
                 const optionElement = document.createElement('option');
-                
+
                 optionElement.text = target;
 
                 selector.add(optionElement);
@@ -36,7 +40,9 @@ function displayTarget(target) {
     
     if (targetSpan) {
         if (target) {
-            targetSpan.innerText = target;
+            if (targetSpan.text != target) {
+                targetSpan.innerText = target;
+            }
         }
         else {
             targetSpan.innerHTML = 'None';
@@ -83,6 +89,17 @@ function toggleFollowLaser() {
     })
 }
 
+function chooseTarget(event) {
+    carsRef.once('value', (s) => {
+        const modelData = getModelByName(s.val(), modelSelected)
+
+        if (modelData) {
+            carsRef.child(modelData.key).update({
+                target: event.target.value
+            });
+        }
+    })
+}
 function redirectToUploadPage() {
     window.location = 'upload.html';
 }
@@ -96,6 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     displayAuthUsername();
     changeHeader();
+    
+    document.getElementById('targets').addEventListener('click', chooseTarget);
 
     carsRef.on('value', (s) => {
         const modelData = getModelByName(s.val(), modelSelected);
