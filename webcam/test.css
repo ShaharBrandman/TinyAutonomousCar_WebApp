@@ -1,0 +1,70 @@
+/* Add modern design styles */
+
+#folderDiv {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 20px;
+  max-width: 800px;
+}
+
+#folderItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid #ddd; /* Add border */
+  padding: 10px;
+  background-color: #f9f9f9; /* Add background color */
+  border-radius: 8px; /* Add border radius */
+}
+
+#folderItem img {
+  max-width: 100px;
+  max-height: 100px;
+  border-radius: 50%; /* Make the thumbnail images circular */
+  cursor: pointer;
+}
+
+.webcamDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+#buttonsDiv {
+  margin-top: 10px;
+}
+
+#recordButton,
+#uploadButton {
+  background-color: #007bff; /* Add button background color */
+  color: #fff; /* Add button text color */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Add smooth transition */
+}
+
+#recordButton:hover,
+#uploadButton:hover {
+  background-color: #0056b3; /* Change button color on hover */
+}
+
+.imagesDiv {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 20px;
+  max-width: 800px;
+}
+
+.imagesDiv img {
+  height:100px;
+  width: 100px;
+  border-radius: 8px;
+  cursor: pointer;
+}
