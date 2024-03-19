@@ -330,11 +330,17 @@ document.addEventListener('DOMContentLoaded', () => {
             wc.displayCameraFeed();
             webCam.play();
             record();
+
+            recordButton.innerText = "stop recording"
+            recordButton.style.backgroundColor = '#d7220a';
         }
         else {
-            webCam.pause();
             wc.hideCameraFeed();
+            webCam.pause();
             stopRecord();
+
+            recordButton.innerText = "Click to record"
+            recordButton.style.backgroundColor = '#007bff';
         }
     });
 

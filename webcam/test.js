@@ -308,6 +308,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadButton = document.getElementById('uploadButton');
     const webCam = document.getElementById('videoElement');
 
+    webCam.addEventListener('play', () => {
+        recordButton.innerText = "stop recording"
+        recordButton.style.backgroundColor = '#d7220a';
+        record();
+    })
+    webCam.addEventListener('pause', () => {
+        recordButton.innerText = "Click to record"
+        recordButton.style.backgroundColor = '#007bff';
+        stopRecord();
+    })
+
     recordButton.addEventListener('click', () => {
         recording = !recording;
         if (recording) {
