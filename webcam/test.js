@@ -116,12 +116,13 @@ function updateFoldersDiv() {
         newDataset.id = 'folderItem';
 
         const datasetThumbnail = new Image();
+
         datasetThumbnail.addEventListener('click', () => {
             currentImages = datasets[i]['images'];
             updateImagesDiv();
         });
         datasetThumbnail.crossOrigin = 'anonymous';
-        datasetThumbnail.src = currentImages[currentImages.length - 1];
+        datasetThumbnail.src = e['images'][e['images'].length - 1]
         newDataset.append(datasetThumbnail);
 
         const label = document.createElement('p');
@@ -138,7 +139,7 @@ function updateFoldersDiv() {
 
         const count = document.createElement('p');
         count.id = 'count';
-        count.innerText = currentImages.length;
+        count.innerText = e['images'].length
         newDataset.append(count);
         
         foldersDiv.append(newDataset);
