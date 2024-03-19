@@ -86,16 +86,42 @@ const supportedTypes = [
     "toothbrush"
 ];
 
+class WebCam {
+    static webCamStream;
+    constructor() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                WebCam.webCamStream = stream;
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
+
+    displayCameraFeed() {
+        const video = document.querySelector("#videoElement");
+        video.srcObject = WebCam.webCamStream;
+    }
+
+    hideCameraFeed() {
+        const video = document.querySelector("#videoElement");
+        video.srcObject = null;
+    }
+}
+
+const wc = new WebCam();
+
+//simply clear the previous imagesDiv content and display new one
+//display nothing if there's no dataset selected
 function updateImagesDiv() {
     const imagesDiv = document.getElementById('imagesDiv');
     imagesDiv.innerText = '';
     
     if (currentImages.length > 0) {
-        for(let e in currentImages) {
+        for(let e of currentImages) {
             const newImage = new Image();
-            newImage.crossOrigin = 'annoymous';
-            newImage.src = currentImages[e];
-            newImage.id = e
+            newImage.crossOrigin = 'anonymous';
+            newImage.src = e;
             imagesDiv.append(newImage);
         }
     }
@@ -106,23 +132,24 @@ function updateImagesDiv() {
     }
 }
 
+//display the datasets in the folderDiv after clearing the previous content
 function updateFoldersDiv() {
     const foldersDiv = document.getElementById('folderDiv');
     foldersDiv.innerHTML = '';
 
-    for(let i in datasets) {
-        e = datasets[i];
+    for(let e of datasets) {
         const newDataset = document.createElement('div');
         newDataset.id = 'folderItem';
 
         const datasetThumbnail = new Image();
 
         datasetThumbnail.addEventListener('click', () => {
-            currentImages = datasets[i]['images'];
+            currentImages = e['images'];
             updateImagesDiv();
+            currentImages = [];
         });
         datasetThumbnail.crossOrigin = 'anonymous';
-        datasetThumbnail.src = e['images'][e['images'].length - 1]
+        datasetThumbnail.src = e['images'][e['images'].length - 1]; 
         newDataset.append(datasetThumbnail);
 
         const label = document.createElement('p');
@@ -139,17 +166,17 @@ function updateFoldersDiv() {
 
         const count = document.createElement('p');
         count.id = 'count';
-        count.innerText = e['images'].length
+        count.innerText = e['images'].length;
         newDataset.append(count);
         
         foldersDiv.append(newDataset);
     }
 }
 
-//a function to record the webcam feed every 100ms second if recording
+//a function to record the webcam feed every 50ms second if recording
 function record() {
     if (recording) {
-        const videoFeed = document.getElementById('videoElement')
+        const videoFeed = document.getElementById('videoElement');
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
             
@@ -157,17 +184,21 @@ function record() {
         canvas.height = videoFeed.videoHeight;
             
         context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
-            
+        
         const imageData = canvas.toDataURL('image/jpeg');
-            
-        currentImages.push(imageData);
-
+        
+        if (imageData.startsWith('data:image/jpeg;base64,')) {
+            currentImages.push(imageData);
+        }
+        
         updateImagesDiv();
 
-        setTimeout(record, 100);
+        setTimeout(record, 50);
     }
 }
 
+//ask the user for label and type until the values are valid
+//then reset the imagesDiv and update the foldersDiv with the new dataset
 function stopRecord() {
     Swal.fire({
         title: "Submit the label the new dataset",
@@ -179,23 +210,18 @@ function stopRecord() {
         confirmButtonText: "Submit",
         showLoaderOnConfirm: true
     }).then((label) => {
-        return new Promise((resolve, reject) => {
-            Swal.fire({
-                title: "Submit the Type the new dataset",
-                input: "text",
-                inputAttributes: {
-                  autocapitalize: "off"
-                },
-                showCancelButton: false,
-                confirmButtonText: "Submit",
-                showLoaderOnConfirm: true
-            }).then((t) => {
-                resolve({'label': label.value, 'type': t.value});
-            }).catch((err) => {
-                reject(err);
-            })
+        return Swal.fire({
+            title: "Submit the Type the new dataset",
+            input: "text",
+            inputAttributes: {
+                autocapitalize: "off"
+            },
+            showCancelButton: false,
+            confirmButtonText: "Submit",
+            showLoaderOnConfirm: true
+        }).then((t) => {
+            return {'label': label.value, 'type': t.value};
         })
-        
     }).then((result) => {
         if (supportedTypes.includes(result['type'])) {
             datasets.push({
@@ -215,49 +241,86 @@ function stopRecord() {
                 text: `${result['type']} is not a valid type`,
                 footer: '<a href="https://gist.github.com/aallan/fbdf008cffd1e08a619ad11a02b74fa8">Supported Types</a>'
             }).then(() => {
-                stopRecord();
-            })   
+                return stopRecord();
+            });
         }
-    })
+    });
 }
 
-function displayWebFeed() {
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then((stream) => {
-            var video = document.querySelector("#videoElement");
-            video.srcObject = stream;
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+function convertB64ToBlob(b64Image) {
+    let byteCharacters;
+    if (b64Image.startsWith('data:image/jpeg;base64,')) {
+        byteCharacters = atob(b64Image.split(',')[1]);
+    } else {
+        throw new Error('Base64 string is not correctly formatted.');
+    }
+
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: 'image/jpeg' });
+}
+function uploadDatasetsToFirebase() {
+    if (datasets.length <= 0) {
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Cannot upload without any datasets",
+            showConfirmButton: true,
+            timer: 1500
+          });
+    }
+    else {
+        for(let d of datasets) {
+            console.log(d['images'])
+            for(let image of d['images']) {
+                trainingDataRef.child(`${d['type']}-${d['label']}`).put(convertB64ToBlob(image), {
+                    contentType: 'image/jpeg'
+                }).then(() => {
+                    Swal.fire({
+                        position: "center",
+                        icon: "success",
+                        title: "Datasets has been uploaded",
+                        showConfirmButton: true,
+                        timer: 1500
+                      });
+                }).catch(err => console.error(err));
+            }
+        }
+
+        wc.hideCameraFeed();
+        currentImages = [];
+        datasets = [];
+        updateImagesDiv();
+        updateFoldersDiv();
+    }
+    
+
+    // trainingDataRef.child(`Annotations/${canvasImage.alt}.xml`).put(new Blob([cocoXML]), {
+    //     contentType: 'application/xml'
+    // });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    displayWebFeed();
-
     const recordButton = document.getElementById('recordButton');
+    const uploadButton = document.getElementById('uploadButton');
     const webCam = document.getElementById('videoElement');
 
     recordButton.addEventListener('click', () => {
         recording = !recording;
         if (recording) {
+            wc.displayCameraFeed();
             webCam.play();
+            record();
         }
         else {
             webCam.pause();
+            wc.hideCameraFeed();
+            stopRecord();
         }
     });
 
-    webCam.addEventListener('play', () => {
-        recordButton.innerText = "stop recording"
-        recordButton.style.backgroundColor = '#d7220a';
-        record();
-    })
-    webCam.addEventListener('pause', () => {
-        recordButton.innerText = "Click to record"
-        recordButton.style.backgroundColor = '#007bff';
-        stopRecord();
-    })
-
-    
+    uploadButton.addEventListener('click', uploadDatasetsToFirebase);
 });

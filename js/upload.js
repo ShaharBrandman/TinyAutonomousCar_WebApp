@@ -1,247 +1,342 @@
-const resHeight = 600;
-const resWidth = 800;
+let recording = false;
 
-let canvas, ctx;
+let currentImages = [];
+let datasets = [];
 
-let canvasImage = new Image();
-canvasImage.crossOrigin = 'anonymous'; //somehow this is possible with an imutable variable
+const supportedTypes = [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted plant",
+    "bed",
+    "dining table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush"
+];
 
-function updateCanvas() {
-    const inputButtonLabel = document.getElementById('selectedImageTxt');
-    if (inputButtonLabel) {
-        inputButtonLabel.innerText = `Selected Image: ${canvasImage.alt}`
+class WebCam {
+    static webCamStream;
+    constructor() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                WebCam.webCamStream = stream;
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
 
-    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
-}
-
-canvasImage.onload = updateCanvas;
-
-let x, y, px, py, w, h;
-let isDrawing = false;
-
-let selectedRect = [];
-
-function updateSamplesDisplay() {
-    const sampleContainer = document.getElementById('samplesContainer');
-    sampleContainer.innerHTML = ''; //clear previous samples
-
-    selectedRect.forEach((e) => {
-        const imageTmp = new Image();
-
-        imageTmp.src = e.data;
-        imageTmp.crossOrigin = 'anonymous';
-
-        imageTmp.alt = `x: ${e.x}, y: ${e.y}, w: ${e.w}, h: ${e.h}, label: ${e.label}`;
-
-        sampleContainer.appendChild(imageTmp);
-    })
-}
-
-function resetCanvas(removeBackgroundImage = false) {
-    document.getElementById('samplesContainer').innerHTML = '';
-    isDrawing = false;
-    px, py, x, y, w, h = 0;
-    selectedRect = [];
-    ctx.clearRect(0, 0, canvas.width, canvas.height);  
-
-    if (removeBackgroundImage == false) {
-        ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
+    displayCameraFeed() {
+        const video = document.querySelector("#videoElement");
+        video.srcObject = WebCam.webCamStream;
     }
-    else {  
-        canvasImage = new Image();
-        canvasImage.crossOrigin = 'anonymous';
-        canvasImage.onload = updateCanvas;
-        document.getElementById('selectedImageTxt').innerText = 'Selected Image: None';
+
+    hideCameraFeed() {
+        const video = document.querySelector("#videoElement");
+        video.srcObject = null;
     }
 }
 
-function createCOCOXml(fileName, selectedRect) {
-    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
-    const rootOpenTag = `<annotation><filename>${fileName}</filename><size><width>${resWidth}</width><height>${resHeight}</height></size>`;
-    const rootCloseTag = '</annotation>';
+const wc = new WebCam();
 
-    const objectTags = selectedRect.map((obj) => {
-        //return `<object><name>${obj.label}</name><bndbox><xmin>${obj.x}</xmin><ymin>${obj.y}</ymin><xmax>${obj.x + obj.w}</xmax><ymax>${obj.y + obj.h}</ymax></bndbox></object>`;
-        const xmlStr = `<object><name>${obj.label}</name><bndbox>`;
+//simply clear the previous imagesDiv content and display new one
+//display nothing if there's no dataset selected
+function updateImagesDiv() {
+    const imagesDiv = document.getElementById('imagesDiv');
+    imagesDiv.innerText = '';
+    
+    if (currentImages.length > 0) {
+        for(let e of currentImages) {
+            const newImage = new Image();
+            newImage.crossOrigin = 'anonymous';
+            newImage.src = e;
+            imagesDiv.append(newImage);
+        }
+    }
+    else {
+        const p = document.createElement('p');
+        p.innerText = 'No Images yet';
+        imagesDiv.append(p);
+    }
+}
+
+//display the datasets in the folderDiv after clearing the previous content
+function updateFoldersDiv() {
+    const foldersDiv = document.getElementById('folderDiv');
+    foldersDiv.innerHTML = '';
+
+    for(let e of datasets) {
+        const newDataset = document.createElement('div');
+        newDataset.id = 'folderItem';
+
+        const datasetThumbnail = new Image();
+
+        datasetThumbnail.addEventListener('click', () => {
+            currentImages = e['images'];
+            updateImagesDiv();
+            currentImages = [];
+        });
+        datasetThumbnail.crossOrigin = 'anonymous';
+        datasetThumbnail.src = e['images'][e['images'].length - 1]; 
+        newDataset.append(datasetThumbnail);
+
+        const label = document.createElement('p');
+        label.id = 'label';
+        label.contentEditable = true;
+        label.innerText = e['label'];
+        newDataset.append(label);
+
+        const type = document.createElement('p');
+        type.id = 'type';
+        type.contentEditable = true;
+        type.innerText = e['type'];
+        newDataset.append(type);
+
+        const count = document.createElement('p');
+        count.id = 'count';
+        count.innerText = e['images'].length;
+        newDataset.append(count);
         
-        const xMin = `<xmin>${Math.min(obj.x, obj.px)}</xmin>`
-        const xMax = `<xmax>${Math.max(obj.x, obj.px)}</xmax>`
+        foldersDiv.append(newDataset);
+    }
+}
+
+//a function to record the webcam feed every 50ms second if recording
+function record() {
+    if (recording) {
+        const videoFeed = document.getElementById('videoElement');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+            
+        canvas.width = videoFeed.videoWidth;
+        canvas.height = videoFeed.videoHeight;
+            
+        context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
         
-        const yMin = `<ymin>${Math.min(obj.y, obj.py)}</ymin>`
-        const yMax = `<ymax>${Math.max(obj.y, obj.py)}</ymax>`
+        const imageData = canvas.toDataURL('image/jpeg');
+        
+        if (imageData.startsWith('data:image/jpeg;base64,')) {
+            currentImages.push(imageData);
+        }
+        
+        updateImagesDiv();
 
-        return `${xmlStr}${xMin}${yMin}${xMax}${yMax}</bndbox></object>`;
+        setTimeout(record, 50);
+    }
+}
+
+//ask the user for label and type until the values are valid
+//then reset the imagesDiv and update the foldersDiv with the new dataset
+function stopRecord() {
+    Swal.fire({
+        title: "Submit the label the new dataset",
+        input: "text",
+        inputAttributes: {
+          autocapitalize: "off"
+        },
+        showCancelButton: false,
+        confirmButtonText: "Submit",
+        showLoaderOnConfirm: true
+    }).then((label) => {
+        return Swal.fire({
+            title: "Submit the Type the new dataset",
+            input: "text",
+            inputAttributes: {
+                autocapitalize: "off"
+            },
+            showCancelButton: false,
+            confirmButtonText: "Submit",
+            showLoaderOnConfirm: true
+        }).then((t) => {
+            return {'label': label.value, 'type': t.value};
+        })
+    }).then((result) => {
+        if (supportedTypes.includes(result['type'])) {
+            datasets.push({
+                'type': result['type'],
+                'label': result['label'],
+                'images': currentImages
+            });
+            updateFoldersDiv();
+
+            currentImages = [];
+            updateImagesDiv();
+        }
+        else {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Type",
+                text: `${result['type']} is not a valid type`,
+                footer: '<a href="https://gist.github.com/aallan/fbdf008cffd1e08a619ad11a02b74fa8">Supported Types</a>'
+            }).then(() => {
+                return stopRecord();
+            });
+        }
     });
-
-    const cocoXml = `${xmlHeader}${rootOpenTag}${objectTags.join('')}${rootCloseTag}`;
-
-    return cocoXml;
 }
 
-function uploadImageAndSelectedRect() {
-    trainingDataRef.child(`Images/${canvasImage.alt}`).put(canvasImage.file, {
-        contentType: 'image/jpeg'
-    });
+function convertB64ToBlob(b64Image) {
+    let byteCharacters;
+    if (b64Image.startsWith('data:image/jpeg;base64,')) {
+        byteCharacters = atob(b64Image.split(',')[1]);
+    } else {
+        throw new Error('Base64 string is not correctly formatted.');
+    }
 
-    cocoXML = createCOCOXml(canvasImage.alt, selectedRect);
-
-    trainingDataRef.child(`Annotations/${canvasImage.alt}.xml`).put(new Blob([cocoXML]), {
-        contentType: 'application/xml'
-    });
-
-    // selectedRect.forEach((face) => {
-    //     trainingDataRef.child(`Metadata/${face.alt}.json`).put(
-    //         new Blob([JSON.stringify(face)]),{
-    //             contentType: 'application/json'
-    //         }
-    //     );
-    // })
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: 'image/jpeg' });
 }
-
-function drawMultipleRect(selectedRect) {
-    ctx.beginPath();
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
-
-    selectedRect.forEach((e) => {
-        ctx.rect(e.x, e.y, e.w, e.h);
-        ctx.fillText(e.label, e.px, e.py);
-        ctx.stroke();
-    })
-
-    // if (selectedRect.length >= 3) {
-    //     console.log(canvas.toDataURL('image/jpeg'));
-    // }
-
-    updateSamplesDisplay();
-}
-
-function drawRect(x, y, w, h) {
-    ctx.beginPath();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(canvasImage, 0, 0, resWidth, resHeight);
-    ctx.rect(x, y, w, h);
-    ctx.stroke();
-}
-
-function initRect(event) {
-    px = event.pageX - canvas.offsetLeft;
-    py = event.pageY - canvas.offsetTop;
-}   
-
-function moveRect(event) {
-    x = event.pageX - canvas.offsetLeft;
-    y = event.pageY - canvas.offsetTop;
-
-    w = px - x;
-    h = py - y;
-
-    drawRect(x, y, w, h);
-}
-
-function saveRectToList() {
-    if (isDrawing) {
-        const label = prompt("Enter a label for the rectangle");
-
-        if(label) {
-            selectedRect.push({
-                'label': label,
-                'x': x,
-                'y': y,
-                'w': w,
-                'h': h,
-                'px': px,
-                'py': py,
-                'data': canvas.toDataURL('image/jpeg'), //image in bash64 format
-                'alt': canvasImage.alt.split('.jpeg')[0], //file name basically
+function uploadDatasetsToFirebase() {
+    if (datasets.length <= 0) {
+        Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Cannot upload without any datasets",
+            showConfirmButton: true,
+            timer: 1500
+          });
+    }
+    else {
+        try {
+            for(let d of datasets) {
+                trainingDataRef
+                    .child(`${d['type']}-${d['label']}`)
+                    .listAll()
+                    .then((res) => {
+                        const existingImagesCount = res.items.length;
+            
+                        for (let i in d['images']) {
+                            const index = Number(i) + existingImagesCount; // Adjust index to avoid overwriting
+                            
+                            trainingDataRef.child(`${d['type']}-${d['label']}/${index}.jpeg`).put(convertB64ToBlob(d['images'][i]), {
+                                contentType: 'image/jpeg'
+                            }).catch((err) => { throw err });
+                    }
+                });
+            }
+            Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "Datasets has been uploaded",
+                showConfirmButton: true,
+                timer: 1500
             });
 
-            //console.log(`new face: ${selectedRect[selectedRect.length - 1]}`);
-
-            drawMultipleRect(selectedRect);
+            wc.hideCameraFeed();
+            currentImages = [];
+            datasets = [];
+            updateImagesDiv();
+            updateFoldersDiv();
+        }
+        catch(err) {
+            Swal.fire({
+                position: "center",
+                icon: "error",
+                title: err,
+                showConfirmButton: true,
+                timer: 1500
+            });
         }
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     displayAuthUsername();
-
     changeHeader();
 
-    canvas = document.getElementById('canvasItself');
+    const recordButton = document.getElementById('recordButton');
+    const uploadButton = document.getElementById('uploadButton');
+    const webCam = document.getElementById('videoElement');
 
-    if(canvas) {
-        ctx = canvas.getContext('2d');
+    recordButton.addEventListener('click', () => {
+        recording = !recording;
+        if (recording) {
+            wc.displayCameraFeed();
+            webCam.play();
+            record();
+        }
+        else {
+            webCam.pause();
+            wc.hideCameraFeed();
+            stopRecord();
+        }
+    });
 
-        document.getElementById('inputButton').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-                    
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    canvasImage.src = e.target.result;
-                    canvasImage.alt = file.name;
-                    canvasImage.crossOrigin = 'anonymous';
-                    canvasImage.file = file;
-                };
-
-                reader.readAsDataURL(file);
-
-                console.log(`${file.name} has been upload to the canvas`)
-            }
-            else {
-                console.error(`File doesn't exists for some reason`);
-            }
-        });
-
-        document.getElementById('resetCanvasButton').addEventListener('click', () => {
-            resetCanvas(true);
-        });
-
-        document.getElementById('removeDrawingButton').addEventListener('click', () => {
-            resetCanvas();
-        });
-
-        document.getElementById('uploadSamplesButton').addEventListener('click', () => {
-            if (canvasImage.src && selectedRect.length > 0) {
-                uploadImageAndSelectedRect();
-                resetCanvas(true);
-            }
-            else {
-                alert('Cannot upload without any file');
-            }
-        });
-
-        canvas.addEventListener('mousedown', (event) => {
-            if (canvasImage.src) {
-                isDrawing = true;
-                initRect(event);
-            }
-        });
-
-        canvas.addEventListener('mouseup', (event) => {
-            if (canvasImage.src) {
-                moveRect(event);
-                saveRectToList(event);
-                isDrawing = false;
-            }
-        });
-
-        canvas.addEventListener('mouseleave', (event) => {
-            if(canvasImage.src && isDrawing) {
-                drawRect(x, y, w, h);
-                saveRectToList(event);
-                isDrawing = false;
-            }
-        });
-
-        canvas.addEventListener('mousemove', (event) => {
-            if (canvasImage.src && isDrawing) {
-                moveRect(event);
-            }
-        })
-    }
+    uploadButton.addEventListener('click', uploadDatasetsToFirebase);
 });

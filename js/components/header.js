@@ -21,10 +21,11 @@ function changeHeader() {
         if (modelSelected) {
             const h1 = document.createElement('h1');
 
-            if (window.location.href.includes('review.html')) {
-                h1.innerHTML = "Review: " + modelSelected;
-            }
-            else if (window.location.href.includes('upload.html')) {
+            // if (window.location.href.includes('review.html')) {
+            //     h1.innerHTML = "Review: " + modelSelected;
+            // }
+            // else 
+            if (window.location.href.includes('upload.html')) {
                 h1.innerHTML = "Upload: " + modelSelected;
             }
             else {

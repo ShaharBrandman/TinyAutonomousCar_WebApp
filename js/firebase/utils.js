@@ -7,4 +7,4 @@ function getModelByName(snapshot, name) {
     }
 
     return undefined;
-} 
+}
